@@ -31,4 +31,5 @@ RUN git clone https://github.com/flutter/flutter.git && \
 ENV PATH $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/flutter/bin
 
 RUN flutter --version && \
-    flutter doctor
+    flutter doctor %% \
+    flutter pub get
