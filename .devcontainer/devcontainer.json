@@ -1,0 +1,16 @@
+{
+    "name": "flutter devcontainer",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "flutter",
+    "workspaceFolder": "/workspace/stock_alert_frontend",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "Dart-Code.dart-code",
+                "Dart-Code.flutter",
+                "mhutchie.git-graph",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
+}
