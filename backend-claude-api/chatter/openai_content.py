@@ -53,7 +53,7 @@ class OpenAIContentImageItem(OpenAIContentItemBase):
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
             
         file_extension = self.file_name.suffix.replace(".", "")
-        return f"data:image/{file_extension};{encoded_string}"
+        return f"data:image/{file_extension};base64,{encoded_string}"
     
 @dataclasses.dataclass
 class OpenAIContentMessageElement:

@@ -8,15 +8,16 @@ class Base64Text:
             # オリジナル画像のサイズを取得
             width, height = image.size
 
+            size = 128
             # 短辺を256ピクセルになるようにリサイズ
             if width < height:
-                aspect_ratio = 256 / width
-                new_width = 256
+                aspect_ratio = size / width
+                new_width = size
                 new_height = int(height * aspect_ratio)
             else:
-                aspect_ratio = 256 / height
+                aspect_ratio = size / height
                 new_width = int(width * aspect_ratio)
-                new_height = 256
+                new_height = size
 
             resized_image = image.resize((new_width, new_height))
 
@@ -35,7 +36,7 @@ class Base64Text:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
             
         file_extension = resized_image.suffix.replace(".", "")
-        return f"data:image/{file_extension};{encoded_string}"
+        return f"data:image/{file_extension};base64,{encoded_string}"
     
     
     def getPictureUrl():
