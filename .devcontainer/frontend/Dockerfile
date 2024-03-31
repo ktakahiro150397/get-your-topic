@@ -25,6 +25,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 # Workdir
 WORKDIR /workspace
 
+# Setup Flutter
 RUN git clone https://github.com/flutter/flutter.git && \
     mv flutter /opt/
 
@@ -33,3 +34,4 @@ ENV PATH $PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt
 RUN flutter --version && \
     flutter doctor %% \
     flutter pub get
+

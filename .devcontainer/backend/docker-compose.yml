@@ -1,24 +1,18 @@
 services:
-  flutter:
+  python:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       - HOME=/root
-      - no_proxy=127.0.0.1,localhost
-      - DISPLAY=host.docker.internal:0
-      - LIBGL_ALWAYS_INDIRECT=1
-      - QT_QUICK_BACKEND=software
-      - QT_X11_NO_MITSHM=1
-    volumes:
-      - ../:/workspace:cached
-      - ~/.Xauthority:/root/.Xauthority
-    network_mode: "host"
-    extra_hosts:
-      - flutter:127.0.1.1
+    env_file:
+      - .env
     command: sleep infinity
-    ports:
-      - 5555:5555
+    volumes:
+      - ../../:/workspace:cached
+      - getyourtopic-pip:/usr/local/lib/
+volumes:
+  getyourtopic-pip:
 
   # db:
   #   image: mysql:8.0.36-debian
@@ -35,6 +29,3 @@ services:
   #     - ./initdb.d:/docker-entrypoint-initdb.d
   #   command:
   #     ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci','--default-time-zone=+09:00']
-  
-# volumes:
-#   stock-alert-db-data:
