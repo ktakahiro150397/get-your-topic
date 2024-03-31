@@ -57,7 +57,7 @@ async def get_topic(item:GetTopicRequestItem):
         }
     else:
         try:
-            response = await chatter.chat(memory_id=item.apikey,message=item.prompt,base64_str=Base64Text.getTestBase64())
+            response = await chatter.chat(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
