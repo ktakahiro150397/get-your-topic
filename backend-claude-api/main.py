@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI,HTTPException
+from Base64Test.base64_text import Base64Text
 from chatter.claude_opus_chatter import ClaudeOpusChatter
 from chatter.openai_chatter import OpenAIChatter
 from model.get_topic import GetTopicRequestItem
@@ -56,12 +57,7 @@ async def get_topic(item:GetTopicRequestItem):
         }
     else:
         try:
-            # return {
-            #     "model": chatter.model,
-            #     "response": f"dry run is DISABLED. Your request is valid.\n(prompt:{item.prompt})"
-            # }
-            response = await chatter.chat(memory_id=item.apikey,message=item.prompt)
-            # response = f"dry run is DISABLED. Your request is valid.\n(prompt:{item.prompt})"
+            response = await chatter.chat(memory_id=item.apikey,message=item.prompt,base64_str=Base64Text.getPictureUrl())
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

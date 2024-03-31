@@ -53,10 +53,6 @@ class OpenAIChatter(chat_interface):
         self.clear_history(memory_id)
         
         return message.choices[0].message.content
-        
-        # 返答を追加
-        #self.contents[memory_id].AddTextContent(role="assistant",content=message.content[0].text)
-        
     
     async def chat_stream(self,memory_id:str,message:str,files:List[Path]=[])->AsyncMessageStream:
         self.__add_client(memory_id)

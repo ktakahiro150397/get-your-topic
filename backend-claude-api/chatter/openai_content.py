@@ -3,6 +3,7 @@ import base64
 import dataclasses
 import os
 from pathlib import Path
+from typing import Optional
 
 
 
@@ -27,7 +28,7 @@ class OpenAIContentTextItem(OpenAIContentItemBase):
 
 @dataclasses.dataclass
 class OpenAIContentImageItem(OpenAIContentItemBase):
-    file_name:Path
+    file_name:Optional[Path]
     base64_file:str = ""
     
     def to_dict(self):
@@ -50,7 +51,9 @@ class OpenAIContentImageItem(OpenAIContentItemBase):
     def encode_image_to_base64(self):
         with open(self.file_name, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-        return encoded_string
+            
+        file_extension = self.file_name.suffix.replace(".", "")
+        return f"data:image/{file_extension};{encoded_string}"
     
 @dataclasses.dataclass
 class OpenAIContentMessageElement:
@@ -68,7 +71,7 @@ class OpenAIContent:
             addItem.content.append(OpenAIContentTextItem(text=text))
 
         if base64_str != "":
-            addItem.content.append(OpenAIContentImageItem(base64_file=base64_str))
+            addItem.content.append(OpenAIContentImageItem(file_name=None,base64_file=base64_str))
 
         for file in file_name_list:
             addItem.content.append(OpenAIContentImageItem(file_name=file))
