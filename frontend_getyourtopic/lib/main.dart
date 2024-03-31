@@ -1,6 +1,11 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:frontend_getyourtopic/component/primary_button.dart';
+import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
+import 'package:frontend_getyourtopic/component/topic_result.dart';
+import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
+import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,27 +20,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Get Your Topic!',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
         fontFamily: "MPlus1P",
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: '話題考えてあげるちゃん'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -44,10 +39,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final promptController = TextEditingController();
+  late final GetTopicRepository topicRepo;
+
+  TopicResult topicResult = const TopicResult();
+  String topicResponse = "";
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    topicRepo = GetTopicRepositoryTest();
   }
 
   @override
@@ -61,20 +62,56 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text("今の状況を教えてください。コミュ障のあなたに代わってAIが最適な話題を考えてくれます。"),
+              const SizedBox(height: 16),
               TextField(
                 controller: promptController,
                 maxLines: 3,
                 textAlignVertical: TextAlignVertical.bottom,
                 decoration: const InputDecoration(
                     labelText: 'どんな状況で話題がないですか？',
-                    hintText: "上司と2人でビジネス街を歩いている。周りは人通りが少なく、駐車場くらいしかない。",
+                    hintText:
+                        "(入力例)上司と2人でビジネス街を歩いている。\n周りは人通りが少なく、駐車場くらいしかない。\n最近仕事でミスったのでちょっと気まずい。",
                     border: OutlineInputBorder()),
               ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                child: const Text('話題を考える！'),
-                onPressed: () {},
+              const SizedBox(height: 16),
+              PrimaryButtonLoadable(
+                isLoading: isLoading,
+                loadingWidget: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(),
+                    ),
+                    SizedBox(width: 8),
+                    Text("話題を考えています..."),
+                  ],
+                ),
+                title: "話題を提案してもらう",
+                height: 50,
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  final response =
+                      await topicRepo.getTopic(promptController.text);
+
+                  setState(() {
+                    isLoading = false;
+                    topicResponse = response;
+                  });
+                },
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              TopicResult(
+                isLoading: false,
+                result: topicResponse,
               ),
             ],
           ),
