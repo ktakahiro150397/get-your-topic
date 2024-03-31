@@ -1,25 +1,43 @@
 services:
   flutter:
+      build:
+        context: ../../
+        dockerfile: .devcontainer/frontend/Dockerfile
+      environment:
+        - HOME=/root
+        - no_proxy=127.0.0.1,localhost
+        - DISPLAY=host.docker.internal:0
+        - LIBGL_ALWAYS_INDIRECT=1
+        - QT_QUICK_BACKEND=software
+        - QT_X11_NO_MITSHM=1
+        - GETTOPIC_ENDPOINT_URL=http://backend:8000/
+      command: sleep infinity
+      volumes:
+        - ../../:/workspace:cached
+        - ~/.Xauthority:/root/.Xauthority
+      #network_mode: "host"
+      extra_hosts:
+        - flutter:127.0.1.1
+      depends_on:
+        - backend
+  backend:
+    container_name: backend
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: .devcontainer/backend/Dockerfile
     environment:
       - HOME=/root
-      - no_proxy=127.0.0.1,localhost
-      - DISPLAY=host.docker.internal:0
-      - LIBGL_ALWAYS_INDIRECT=1
-      - QT_QUICK_BACKEND=software
-      - QT_X11_NO_MITSHM=1
+    env_file:
+      - .env
+    command: uvicorn main:app --reload --port 8000 --host=0.0.0.0
     volumes:
       - ../../:/workspace:cached
-      - ~/.Xauthority:/root/.Xauthority
-    network_mode: "host"
-    extra_hosts:
-      - flutter:127.0.1.1
-    command: sleep infinity
+      - getyourtopic-pip-front:/usr/local/lib/
     ports:
-      - 5555:5555
-
+      - 8000:8000
+volumes:
+  getyourtopic-pip-front:
+  
   # python:
   #   build:
   #     context: .
