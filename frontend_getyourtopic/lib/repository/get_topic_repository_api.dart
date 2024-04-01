@@ -5,7 +5,7 @@ import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:http/http.dart' as http;
 
 class GetTopicRepositoryAPI extends GetTopicRepository {
-  static const String ENDPOINT = "http://backend:8000";
+  static const String ENDPOINT = "yanelmo.net/getTopic-backend";
 
   @override
   Future<GetTopic> getTopic(String prompt) async {
@@ -16,7 +16,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       "dry_run": false,
     };
 
-    final endpointUri = Uri.http("backend:8000", "getTopic/");
+    final endpointUri = Uri.http(ENDPOINT, "getTopic/");
     final response =
         await http.post(endpointUri, body: jsonEncode(body), headers: {
       "accept": "application/json",
