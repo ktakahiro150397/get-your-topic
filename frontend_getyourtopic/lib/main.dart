@@ -1,12 +1,9 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:frontend_getyourtopic/component/primary_button.dart';
 import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
 import 'package:frontend_getyourtopic/component/topic_result.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
-import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TopicResult topicResult = const TopicResult();
   String topicResponse = "";
   bool isLoading = false;
+  bool isResponseOK = false;
 
   @override
   void initState() {
@@ -104,14 +102,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     isLoading = false;
                     topicResponse = response.responseContent;
+                    isResponseOK = true;
                   });
                 },
               ),
               const SizedBox(
-                height: 8,
+                height: 16,
               ),
               TopicResult(
-                isLoading: false,
+                isResponseOK: isResponseOK,
                 result: topicResponse,
               ),
             ],
