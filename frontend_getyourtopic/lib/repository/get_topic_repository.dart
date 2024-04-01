@@ -1,3 +1,5 @@
+import 'package:frontend_getyourtopic/model/get_topic.dart';
+
 abstract class GetTopicRepository {
-  Future<String> getTopic(String prompt);
+  Future<GetTopic> getTopic(String prompt);
 }

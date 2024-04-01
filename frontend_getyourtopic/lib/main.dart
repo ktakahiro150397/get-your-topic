@@ -5,6 +5,7 @@ import 'package:frontend_getyourtopic/component/primary_button.dart';
 import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
 import 'package:frontend_getyourtopic/component/topic_result.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
+import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 
 void main() {
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    topicRepo = GetTopicRepositoryTest();
+    topicRepo = GetTopicRepositoryAPI();
   }
 
   @override
@@ -61,8 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
+            //crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("今の状況を教えてください。コミュ障のあなたに代わってAIが最適な話題を考えてくれます。"),
               const SizedBox(height: 16),
@@ -102,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   setState(() {
                     isLoading = false;
-                    topicResponse = response;
+                    topicResponse = response.responseContent;
                   });
                 },
               ),
