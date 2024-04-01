@@ -15,7 +15,6 @@ services:
       volumes:
         - ../../:/workspace:cached
         - ~/.Xauthority:/root/.Xauthority
-      #network_mode: "host"
       extra_hosts:
         - flutter:127.0.1.1
       depends_on:

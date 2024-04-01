@@ -12,6 +12,6 @@ services:
       - ../../:/workspace:cached
       - getyourtopic-pip:/usr/local/lib/
     ports:
-      - 8000:8000
+      - 8001:8001
 volumes:
   getyourtopic-pip:
