@@ -1,13 +1,28 @@
 import os
 from fastapi import FastAPI,HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from Base64Test.base64_text import Base64Text
 from chatter.claude_opus_chatter import ClaudeOpusChatter
 from chatter.openai_chatter import OpenAIChatter
 from model.get_topic import GetTopicRequestItem
 
+origins = [
+    "http://localhost",
+    "http://127.0.0.1:41639",
+    "http://127.0.0.1:36611",
+    "https://yanelmo.net",
+]
 
 # uvicorn main:app --reload --port 8000
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 system_role = """あなたは話題を考えてくれるアシスタントです。
 与えられた状況から、以下の内容を考えてください。
