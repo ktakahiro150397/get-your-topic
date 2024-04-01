@@ -16,7 +16,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       "dry_run": false,
     };
 
-    final endpointUri = Uri.http(ENDPOINT, "getTopic/");
+    final endpointUri = Uri.http("yanelmo.net", "/getTopic-backend/getTopic/");
     final response =
         await http.post(endpointUri, body: jsonEncode(body), headers: {
       "accept": "application/json",

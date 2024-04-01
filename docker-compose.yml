@@ -1,0 +1,53 @@
+services:
+  frontend:
+    build:
+      context: /frontend_getyourtopic
+      dockerfile: /Dockerfile
+    ports:
+      - "80:80"
+    networks:
+        - network_production
+    #command: sleep infinity
+  
+  backend:
+    build:
+      context: /backend-claude-api
+      dockerfile: /Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - network_production
+networks:
+  network_test:
+    external: true
+  network_production:
+    external: true
+    # env_file:
+    #   - .env
+
+      # environment:
+      #   - HOME=/root
+      #   - no_proxy=127.0.0.1,localhost
+      #   - DISPLAY=host.docker.internal:0
+      #   - LIBGL_ALWAYS_INDIRECT=1
+      #   - QT_QUICK_BACKEND=software
+      #   - QT_X11_NO_MITSHM=1
+      # depends_on:
+      #   - backend
+#   backend:
+#     container_name: backend
+#     build:
+#       context: ../../
+#       dockerfile: .devcontainer/backend/Dockerfile
+#     environment:
+#       - HOME=/root
+#     env_file:
+#       - .env
+#     command: uvicorn main:app --reload --port 8000 --host=0.0.0.0
+#     volumes:
+#       - ../../:/workspace:cached
+#       - getyourtopic-pip-front:/usr/local/lib/
+#     ports:
+#       - 8000:8000
+# volumes:
+#   getyourtopic-pip-front:
