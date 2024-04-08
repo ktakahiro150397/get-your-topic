@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_getyourtopic/component/action_base.dart';
 
-class ActionSuccess extends ActionBase {
-  const ActionSuccess({
+class ActionInProgress extends ActionBase {
+  const ActionInProgress({
     super.key,
     required super.title,
     required super.content,
   }) : super(
-          color: Colors.green,
+          color: Colors.blue,
           titleLeading: const Icon(
-            Icons.check_circle_rounded,
+            Icons.psychology,
             size: 30,
-            color: Colors.green,
+            color: Colors.blue,
           ),
         );
 }

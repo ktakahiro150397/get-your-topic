@@ -11,4 +11,15 @@ class GetTopicRepositoryTest extends GetTopicRepository {
         response:
             "getTopic / Your prompt is $prompt! base64:${pictureBase64?.isEmpty}");
   }
+
+  @override
+  Stream<String> getTopicStream(String prompt, {String? pictureBase64}) async* {
+    String responseString =
+        "Streaming from getTopicStream! Can you read this? prompt:$prompt / pictureBase64:$pictureBase64";
+
+    for (var i = 0; i < responseString.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 10));
+      yield responseString[i];
+    }
+  }
 }

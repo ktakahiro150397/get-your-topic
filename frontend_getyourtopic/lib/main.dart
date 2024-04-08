@@ -48,9 +48,12 @@ class _MyHomePageState extends State<MyHomePage> {
   String topicResponse = "";
   bool isLoading = false;
   bool isResponseOK = false;
+  bool isResponseComplete = false;
 
   Uint8List? imageBytes;
   String base64WithScheme = "";
+
+  void Function()? onPressedGetResponse;
 
   Widget getUploadPicture() {
     if (imageBytes == null) {
@@ -87,11 +90,65 @@ class _MyHomePageState extends State<MyHomePage> {
     return false;
   }
 
+  void onPressedGetStreamingResponse() async {
+    final isValid = validate();
+
+    if (!isValid) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("エラー"),
+              content: const Text("文章か画像で今の状況を教えてください！"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+    await getResponseStream();
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   Future<GetTopic> postLLMAPI() async {
     final response = await topicRepo.getTopic(promptController.text,
         pictureBase64: base64WithScheme);
 
     return response;
+  }
+
+  Future<void> getResponseStream() async {
+    topicResponse = "";
+
+    setState(() {
+      isResponseComplete = false;
+      onPressedGetResponse = null;
+    });
+
+    final stream = topicRepo.getTopicStream(promptController.text,
+        pictureBase64: base64WithScheme);
+
+    await for (var chunk in stream) {
+      setState(() {
+        isResponseOK = true;
+        topicResponse += chunk;
+      });
+    }
+
+    setState(() {
+      isResponseComplete = true;
+      onPressedGetResponse = onPressedGetStreamingResponse;
+    });
   }
 
   @override
@@ -142,57 +199,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 16),
               getUploadPicture(),
-              //const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
               PrimaryButtonLoadable(
-                isLoading: isLoading,
-                loadingWidget: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(),
-                    ),
-                    SizedBox(width: 8),
-                    Text("話題を考えています..."),
-                  ],
-                ),
-                title: "話題を提案してもらう！",
+                title: "話題を提案してもらう！(Streaming)",
                 height: 50,
-                onPressed: () async {
-                  final isValid = validate();
-
-                  if (!isValid) {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text("エラー"),
-                            content: const Text("文章か画像で今の状況を教えてください！"),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("OK"),
-                              ),
-                            ],
-                          );
-                        });
-                    return;
-                  }
-
-                  setState(() {
-                    isLoading = true;
-                  });
-                  final response = await postLLMAPI();
-
-                  setState(() {
-                    isLoading = false;
-                    topicResponse = response.responseContent;
-                    isResponseOK = true;
-                  });
-                },
+                onPressed: onPressedGetResponse,
+                isLoading: isLoading,
               ),
               const SizedBox(
                 height: 16,
@@ -200,6 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
               TopicResult(
                 isResponseOK: isResponseOK,
                 result: topicResponse,
+                isResponseComplete: isResponseComplete,
               ),
             ],
           ),

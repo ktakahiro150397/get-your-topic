@@ -31,4 +31,11 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
           jsonDecode(const Utf8Decoder().convert(response.bodyBytes)));
     }
   }
+
+  @override
+  Stream<String> getTopicStream(String prompt, {String? pictureBase64}) {
+    // TODO: implement getTopicStream
+    // Add param : stream: True/False
+    throw UnimplementedError();
+  }
 }
