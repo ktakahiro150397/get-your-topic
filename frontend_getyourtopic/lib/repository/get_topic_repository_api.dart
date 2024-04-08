@@ -8,11 +8,11 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   static const String ENDPOINT = "yanelmo.net/getTopic-backend";
 
   @override
-  Future<GetTopic> getTopic(String prompt) async {
+  Future<GetTopic> getTopic(String prompt, {String? pictureBase64}) async {
     final body = {
       "apikey": "",
       "prompt": prompt,
-      "picture_base64": "",
+      "picture_base64": pictureBase64,
       "dry_run": false,
     };
 
