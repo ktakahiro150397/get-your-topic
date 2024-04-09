@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from urllib.request import Request
 from fastapi import FastAPI,HTTPException,status
@@ -105,22 +106,37 @@ async def get_topic_stream(item:GetTopicRequestItem):
             content=testResponse,
         )
     else:
-        try:
-            response = await chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        async def get_stream():
+            try:
+                print("------------------")
+
+                response = await chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
+                
+                async for chunk in response:
+                    if chunk is not None:
+                        content = chunk.choices[0].delta.content
+                        data = {"content":f"{content}"}
+                        if content is not None:
+                            print(content)
+                            yield f"event: RESPONSE\ndata: {json.dumps(data)}\n\n"
+
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
         
-        return StreamingResponse(
-            content=get_stream(response),
-            media_type="text/event-stream",
-        )
+        return StreamingResponse(content=get_stream(),media_type="text/event-stream")
+
+        # return StreamingResponse(
+        #     content=get_stream(response),
+        #     media_type="text/event-stream",
+        # )
     
-async def get_stream(response):
-    async for chunk in response.response:
-        if chunk is not None:
-            content = chunk.choices[0].delta.content
-            if content is not None:
-                yield content
+# async def get_stream(response):
+#     async for chunk in response:
+#         if chunk is not None:
+#             content = chunk.choices[0].delta.content
+#             if content is not None:
+#                 yield content
 
 
     
