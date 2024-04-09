@@ -33,8 +33,8 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   }
 
   @override
-  Future<Stream<String>> getTopicStream(String prompt,
-      {String? pictureBase64}) async {
+  // Future<Stream<String>> getTopicStream(String prompt,
+  Stream<String> getTopicStream(String prompt, {String? pictureBase64}) async* {
     final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
     final body = {
       "apikey": "",
@@ -43,15 +43,43 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       "dry_run": false,
     };
 
+    final client = http.Client();
+
     final request = http.Request(
       "POST",
       endpointUri,
     );
-    request.headers.addEntries({"Content-Type": "application/json"}.entries);
-    request.body = jsonEncode(body);
-    final response = await request.send();
 
-    return convertResponseStreamToStringStream(response.stream);
+    final header = {
+      'accept': 'text/event-stream',
+      "Content-Type": "application/json",
+      "stream": "true",
+    };
+
+    header.forEach((key, value) {
+      request.headers[key] = value;
+    });
+    request.body = jsonEncode(body);
+    final response = client.send(request);
+
+    final _controller = StreamController<String>();
+
+    response.asStream().listen((event) {
+      _controller.sink.add("<data>");
+    });
+
+    await for (var chunk in response.asStream()) {
+      yield chunk.toString();
+    }
+
+    // await for (var chunk in response.asStream()) {
+    //   final content = chunk.stream.bytesToString();
+    //   print(content);
+    // }
+
+    throw UnimplementedError();
+
+    //response.asStream().transform(Utf8.);
   }
 
   Stream<String> convertResponseStreamToStringStream(

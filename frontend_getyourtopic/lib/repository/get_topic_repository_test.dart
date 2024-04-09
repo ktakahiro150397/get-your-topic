@@ -13,8 +13,7 @@ class GetTopicRepositoryTest extends GetTopicRepository {
   }
 
   @override
-  Future<Stream<String>> getTopicStream(String prompt,
-      {String? pictureBase64}) async {
+  Stream<String> getTopicStream(String prompt, {String? pictureBase64}) async* {
     // String responseString =
     //     "Streaming from getTopicStream! Can you read this? prompt:$prompt / pictureBase64:$pictureBase64";
 

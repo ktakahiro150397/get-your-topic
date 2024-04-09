@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressedGetResponse = null;
     });
 
-    final stream = await topicRepo.getTopicStream(promptController.text,
+    final stream = topicRepo.getTopicStream(promptController.text,
         pictureBase64: base64WithScheme);
 
     await for (var chunk in stream) {
