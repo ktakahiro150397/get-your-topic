@@ -8,15 +8,16 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   static const String ENDPOINT = "yanelmo.net/getTopic-backend";
 
   @override
-  Future<GetTopic> getTopic(String prompt) async {
+  Future<GetTopic> getTopic(String prompt, {String? pictureBase64}) async {
     final body = {
       "apikey": "",
       "prompt": prompt,
-      "picture_base64": "",
+      "picture_base64": pictureBase64,
       "dry_run": false,
     };
 
-    final endpointUri = Uri.http("yanelmo.net", "/getTopic-backend/getTopic/");
+    //final endpointUri = Uri.http("yanelmo.net", "/getTopic-backend/getTopic/");
+    final endpointUri = Uri.http("127.0.0.1:8001", "/getTopic/");
     final response =
         await http.post(endpointUri, body: jsonEncode(body), headers: {
       "accept": "application/json",
