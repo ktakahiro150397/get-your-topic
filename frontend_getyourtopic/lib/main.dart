@@ -10,7 +10,7 @@ import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressedGetResponse = null;
     });
 
-    final stream = topicRepo.getTopicStream(promptController.text,
+    final stream = await topicRepo.getTopicStream(promptController.text,
         pictureBase64: base64WithScheme);
 
     await for (var chunk in stream) {
@@ -156,6 +156,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     topicRepo = GetTopicRepositoryAPI();
     //topicRepo = GetTopicRepositoryTest();
+
+    onPressedGetResponse = onPressedGetStreamingResponse;
   }
 
   @override

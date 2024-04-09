@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
@@ -32,9 +33,31 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   }
 
   @override
-  Stream<String> getTopicStream(String prompt, {String? pictureBase64}) {
-    // TODO: implement getTopicStream
-    // Add param : stream: True/False
-    throw UnimplementedError();
+  Future<Stream<String>> getTopicStream(String prompt,
+      {String? pictureBase64}) async {
+    final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
+    final body = {
+      "apikey": "",
+      "prompt": prompt,
+      "picture_base64": pictureBase64,
+      "dry_run": false,
+    };
+
+    final request = http.Request(
+      "POST",
+      endpointUri,
+    );
+    request.headers.addEntries({"Content-Type": "application/json"}.entries);
+    request.body = jsonEncode(body);
+    final response = await request.send();
+
+    return convertResponseStreamToStringStream(response.stream);
+  }
+
+  Stream<String> convertResponseStreamToStringStream(
+      Stream<List<int>> responseStream) async* {
+    await for (var chunk in responseStream) {
+      yield utf8.decode(chunk);
+    }
   }
 }
