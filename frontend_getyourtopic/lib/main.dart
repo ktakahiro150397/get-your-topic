@@ -6,6 +6,7 @@ import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
 import 'package:frontend_getyourtopic/component/topic_result.dart';
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
+import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 
@@ -96,8 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    //topicRepo = GetTopicRepositoryAPI();
-    topicRepo = GetTopicRepositoryTest();
+    topicRepo = GetTopicRepositoryAPI();
+    //topicRepo = GetTopicRepositoryTest();
   }
 
   @override
