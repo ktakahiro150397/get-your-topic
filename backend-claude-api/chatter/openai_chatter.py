@@ -6,6 +6,7 @@ from anthropic import AsyncMessageStream
 from chatter.chat_interface import chat_interface
 import os
 from openai import OpenAI
+import openai
 
 from chatter.claude_content import ClaudeContent
 from chatter.openai_content import OpenAIContent
@@ -54,23 +55,25 @@ class OpenAIChatter(chat_interface):
         
         return message.choices[0].message.content
     
-    async def chat_stream(self,memory_id:str,message:str,files:List[Path]=[])->AsyncMessageStream:
+    async def chat_stream(self,memory_id:str,message:str,base64_str:str=""):
         self.__add_client(memory_id)
 
         # メッセージ追加
-        self.contents[memory_id].AddContent(role="user",text=message,file_name_list=files)
+        self.contents[memory_id].AddContent(role="system",text=self.system_role)
+        self.contents[memory_id].AddContent(role="user",text=message,base64_str=base64_str)
 
-        message = self.contents[memory_id].GetSendMessage()
+        # ChatGPTから返答を取得
+        messages = self.contents[memory_id].GetSendMessage()
 
-        stream = await self.clients[memory_id].messages.stream(
+        response = self.clients[memory_id].chat.completions.create(
+            model=self.model,
+            messages=messages,
             max_tokens=self.max_tokens,
             temperature=self.temperature,
-            messages=message,
-            model="claude-3-opus-20240229",
-            system=self.system_role,
-        ).__aenter__()
+            stream=True,
+        )
 
-        return stream
+        return response
     
     def add_history(self,memory_id:str,role:str,message:str)->None:
         self.__add_client(memory_id)

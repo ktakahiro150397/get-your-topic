@@ -1,16 +1,22 @@
+import asyncio
 import os
-from fastapi import FastAPI,HTTPException
+from urllib.request import Request
+from fastapi import FastAPI,HTTPException,status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
 from Base64Test.base64_text import Base64Text
 from chatter.claude_opus_chatter import ClaudeOpusChatter
 from chatter.openai_chatter import OpenAIChatter
 from model.get_topic import GetTopicRequestItem
+from openai.types.chat import ChatCompletion
 
 origins = [
-    "http://localhost",
-    "http://127.0.0.1:41639",
-    "http://127.0.0.1:36611",
-    "https://yanelmo.net",
+    # "http://localhost",
+    # "http://127.0.0.1:41639",
+    # "http://127.0.0.1:36611",
+    # "https://yanelmo.net",
+    "*",
 ]
 
 # uvicorn main:app --reload --port 8000
@@ -55,6 +61,11 @@ chatter = OpenAIChatter(
     system_role=system_role
 )
 
+@app.exception_handler(RequestValidationError)
+async def handler(request:Request, exc:RequestValidationError):
+    print(exc)
+    return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -80,4 +91,60 @@ async def get_topic(item:GetTopicRequestItem):
             "model": chatter.model,
             "response": response
         }
+
+@app.post("/getTopicStream/")
+async def get_topic_stream(item:GetTopicRequestItem):
+    # validate the input
+    if item.prompt == "":
+        raise HTTPException(status_code=400, detail="prompt is required")
     
+    if item.dry_run:
+        testResponse = get_topic_stream_test()
+
+        return StreamingResponse(
+            content=testResponse,
+        )
+    else:
+        try:
+            response = await chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        return StreamingResponse(
+            content=get_stream(response),
+            media_type="text/event-stream",
+        )
+    
+async def get_stream(response):
+    async for chunk in response.response:
+        if chunk is not None:
+            content = chunk.choices[0].delta.content
+            if content is not None:
+                yield content
+
+
+    
+async def get_topic_stream_test():
+    testString = "Dry run is enabled.This is test stream.Your request is valid."
+    for i,char in enumerate(testString):
+        if i == len(testString) - 1:
+            yield {
+                "id":"get_topic_stream_test",
+                "object":"chat.completion.chunk",
+                "created":1712629508,
+                "model":"get_topic_stream_test_dry_run",
+                "system_fingerprint":None,
+                "choices":[
+                    {"index":0,"delta":{"content":char},
+                    "logprobs":None,"finish_reason":"stop"}]}
+        else:
+            yield {
+                "id":"get_topic_stream_test",
+                "object":"chat.completion.chunk",
+                "created":1712629508,
+                "model":"get_topic_stream_test_dry_run",
+                "system_fingerprint":None,
+                "choices":[
+                    {"index":0,"delta":{"content":char},
+                    "logprobs":None,"finish_reason":None}]}
+            await asyncio.sleep(50/1000)
