@@ -8,6 +8,7 @@ class GetTopicRepositoryTest extends GetTopicRepository {
 
     return GetTopic(
         model: "GetTopicRepositoryTest",
-        response: "getTopic / Your prompt is $prompt! base64:$pictureBase64");
+        response:
+            "getTopic / Your prompt is $prompt! base64:${pictureBase64?.isEmpty}");
   }
 }
