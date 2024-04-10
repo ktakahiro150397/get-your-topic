@@ -115,22 +115,23 @@ async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
                 response = chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
                 
                 # yield f"event: START\ndata:\n\n"
-                yield {
-                                "event":"START"
-                            }
+                # yield {
+                #                 "event":"START"
+                #             }
                 for chunk in response:
                     if chunk is not None:
                         content = chunk.choices[0].delta.content
                         data = {"content":f"{content}"}
                         if content is not None:
+                            yield content
                             # yield f"event: RESPONSE\ndata: {json.dumps(data)}\n\n"
-                            yield {
-                                "data": content,
-                                "event":"RESPONSE"
-                            }
-                yield {
-                                "event":"END"
-                            }
+                            # yield {
+                            #     "data": content,
+                            #     "event":"RESPONSE"
+                            # }
+                # yield {
+                #                 "event":"END"
+                #             }
                 # yield f"event: END\ndata:\n\n"
                 print("end")
                 print("------------------")
