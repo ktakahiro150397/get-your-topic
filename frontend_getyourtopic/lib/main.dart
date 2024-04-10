@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
+import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:frontend_getyourtopic/component/primary_button.dart';
 import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
 import 'package:frontend_getyourtopic/component/topic_result.dart';
@@ -8,7 +11,9 @@ import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
+import 'package:frontend_getyourtopic/sse_stream_web.dart';
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   runApp(const MyApp());
@@ -114,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       isLoading = true;
     });
-    await getResponseStream();
+    //await getResponseStream();
+    getResponseStream();
     setState(() {
       isLoading = false;
     });
@@ -127,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return response;
   }
 
-  Future<void> getResponseStream() async {
+  void getResponseStream() {
     topicResponse = "";
 
     setState(() {
@@ -135,15 +141,92 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressedGetResponse = null;
     });
 
-    final stream = topicRepo.getTopicStream(promptController.text,
-        pictureBase64: base64WithScheme);
+    const apiServerUrl = String.fromEnvironment("API_SERVER");
+    final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
+    final body = {
+      "apikey": "",
+      "prompt": promptController.text,
+      "picture_base64": base64WithScheme,
+      "dry_run": false,
+    };
+    final header = {
+      'accept': 'text/event-stream',
+      "Content-Type": "application/json",
+    };
 
-    await for (var chunk in stream) {
-      setState(() {
-        isResponseOK = true;
-        topicResponse += chunk;
-      });
-    }
+    var request = http.Request(
+      "POST",
+      endpointUri,
+    );
+    request.headers["Accept"] = "text/event-stream";
+    request.headers["Content-Type"] = "application/json";
+    request.body = jsonEncode(body);
+
+    var stream = getStream(request);
+
+    stream.asStream().listen((event) {
+      event
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .listen(
+        (value) {
+          setState(() {
+            isResponseOK = true;
+            topicResponse += value;
+          });
+        },
+      );
+    });
+
+    // // どばっとくる・全部生の文字列
+    // var client = http.Client();
+    // var request = http.Request(
+    //   "POST",
+    //   endpointUri,
+    // );
+    // request.headers["Accept"] = "text/event-stream";
+    // request.headers["Content-Type"] = "application/json";
+    // request.body = jsonEncode(body);
+
+    // Future<http.StreamedResponse> response = client.send(request);
+
+    // response.asStream().listen((event) {
+    //   print(event);
+    //   event.stream.transform(const Utf8Decoder()).listen((value) {
+    //     print((value));
+    //   });
+    // });
+
+    // // どばっとくる・内容のモデルへのハンドリングOK
+    // SSEClient.subscribeToSSE(
+    //         method: SSERequestType.POST,
+    //         url: endpointUri.toString(),
+    //         header: header,
+    //         body: body)
+    //     .listen((event) {
+    //   if (event.data != null) {
+    //     setState(() {
+    //       isResponseOK = true;
+    //       topicResponse += event.data!.trim();
+    //     });
+    //   }
+    // });
+
+    // stream.listen((event) {
+    //   if (event.data != null) {
+    //     topicResponse += event.data!;
+    //   }
+    // });
+
+    // final stream = topicRepo.getTopicStream(promptController.text,
+    //     pictureBase64: base64WithScheme);
+
+    // await for (var chunk in stream) {
+    //   setState(() {
+    //     isResponseOK = true;
+    //     topicResponse += chunk;
+    //   });
+    // }
 
     setState(() {
       isResponseComplete = true;
