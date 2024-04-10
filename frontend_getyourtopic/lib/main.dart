@@ -164,6 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var stream = getStream(request);
 
+    var isBlankStreak = false;
     stream.asStream().listen((event) {
       event
           .transform(const Utf8Decoder())
@@ -186,7 +187,12 @@ class _MyHomePageState extends State<MyHomePage> {
             );
 
             if (value.isEmpty) {
-              value += "\n";
+              if (isBlankStreak) {
+                value += "\n";
+                isBlankStreak = false;
+              } else {
+                isBlankStreak = true;
+              }
             }
 
             setState(() {

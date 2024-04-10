@@ -40,6 +40,7 @@ dependencies:
   stream_transform: ^2.1.0
   flutter_client_sse: ^2.0.1
   fetch_client: ^1.0.2
+  flutter_markdown: ^0.6.22+1
 
 dev_dependencies:
   flutter_test:
