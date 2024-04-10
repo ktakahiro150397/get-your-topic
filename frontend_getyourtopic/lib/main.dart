@@ -169,10 +169,36 @@ class _MyHomePageState extends State<MyHomePage> {
           .transform(const Utf8Decoder())
           .transform(const LineSplitter())
           .listen(
-        (value) {
+        (dataLine) {
+          var lineRegex = RegExp(r'^([^:]*)(?::)?(?: )?(.*)?$');
+
+          ///Get the match of each line through the regex
+          Match match = lineRegex.firstMatch(dataLine)!;
+          var field = match.group(1);
+          if (field!.isEmpty) {
+            return;
+          }
+          var value = '';
+          if (field == "data") {
+            //If the field is data, we get the data through the substring
+            value = dataLine.substring(
+              6,
+            );
+
+            if (value.isEmpty) {
+              value += "\n";
+            }
+
+            setState(() {
+              isResponseOK = true;
+              topicResponse += value;
+            });
+          }
+        },
+        onDone: () {
           setState(() {
-            isResponseOK = true;
-            topicResponse += value;
+            isResponseComplete = true;
+            onPressedGetResponse = onPressedGetStreamingResponse;
           });
         },
       );
@@ -227,11 +253,6 @@ class _MyHomePageState extends State<MyHomePage> {
     //     topicResponse += chunk;
     //   });
     // }
-
-    setState(() {
-      isResponseComplete = true;
-      onPressedGetResponse = onPressedGetStreamingResponse;
-    });
   }
 
   @override
