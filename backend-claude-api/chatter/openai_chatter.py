@@ -5,7 +5,7 @@ from typing import Dict, List
 from anthropic import AsyncMessageStream
 from chatter.chat_interface import chat_interface
 import os
-from openai import AsyncOpenAI
+from openai import OpenAI
 import openai
 
 from chatter.claude_content import ClaudeContent
@@ -17,7 +17,7 @@ class OpenAIChatter(chat_interface):
                  max_tokens:int=1024,
                  temperature:int=0,
                  system_role:str="")->None:
-        self.clients:Dict[str,AsyncOpenAI] = {}
+        self.clients:Dict[str,OpenAI] = {}
         self.contents:Dict[str,OpenAIContent] = {}
         
         self.max_tokens = max_tokens
@@ -29,7 +29,7 @@ class OpenAIChatter(chat_interface):
 
     def __add_client(self,memory_id:str)->None:
         if memory_id not in self.clients:
-            self.clients[memory_id] = AsyncOpenAI(api_key=self.api_key)
+            self.clients[memory_id] = OpenAI(api_key=self.api_key)
         if memory_id not in self.contents:
             self.contents[memory_id] = OpenAIContent(items=[])
 
@@ -55,7 +55,7 @@ class OpenAIChatter(chat_interface):
         
         return message.choices[0].message.content
     
-    async def chat_stream(self,memory_id:str,message:str,base64_str:str=""):
+    def chat_stream(self,memory_id:str,message:str,base64_str:str=""):
         self.__add_client(memory_id)
 
         # メッセージ追加
@@ -65,7 +65,7 @@ class OpenAIChatter(chat_interface):
         # ChatGPTから返答を取得
         messages = self.contents[memory_id].GetSendMessage()
 
-        response = await self.clients[memory_id].chat.completions.create(
+        response = self.clients[memory_id].chat.completions.create(
             model=self.model,
             messages=messages,
             max_tokens=self.max_tokens,

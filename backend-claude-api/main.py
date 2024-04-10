@@ -11,6 +11,7 @@ from chatter.claude_opus_chatter import ClaudeOpusChatter
 from chatter.openai_chatter import OpenAIChatter
 from model.get_topic import GetTopicRequestItem
 from openai.types.chat import ChatCompletion
+from sse_starlette.sse import EventSourceResponse
 
 origins = [
     # "http://localhost",
@@ -94,7 +95,7 @@ async def get_topic(item:GetTopicRequestItem):
         }
 
 @app.post("/getTopicStream/")
-async def get_topic_stream(item:GetTopicRequestItem):
+async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
     # validate the input
     if item.prompt == "":
         raise HTTPException(status_code=400, detail="prompt is required")
@@ -106,25 +107,39 @@ async def get_topic_stream(item:GetTopicRequestItem):
             content=testResponse,
         )
     else:
-        async def get_stream():
+        def get_stream():
             try:
                 print("------------------")
+                print("start")
 
-                response = await chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
+                response = chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
                 
-                async for chunk in response:
+                # yield f"event: START\ndata:\n\n"
+                yield {
+                                "event":"START"
+                            }
+                for chunk in response:
                     if chunk is not None:
                         content = chunk.choices[0].delta.content
                         data = {"content":f"{content}"}
                         if content is not None:
-                            print(content)
-                            yield f"event: RESPONSE\ndata: {json.dumps(data)}\n\n"
-
+                            # yield f"event: RESPONSE\ndata: {json.dumps(data)}\n\n"
+                            yield {
+                                "data": content,
+                                "event":"RESPONSE"
+                            }
+                yield {
+                                "event":"END"
+                            }
+                # yield f"event: END\ndata:\n\n"
+                print("end")
+                print("------------------")
 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
         
-        return StreamingResponse(content=get_stream(),media_type="text/event-stream")
+        return EventSourceResponse(get_stream())
+        #return StreamingResponse(content=get_stream(),media_type="text/event-stream")
 
         # return StreamingResponse(
         #     content=get_stream(response),
