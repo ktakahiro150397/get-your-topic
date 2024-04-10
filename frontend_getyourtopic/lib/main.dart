@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
-import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:frontend_getyourtopic/component/primary_button.dart';
 import 'package:frontend_getyourtopic/component/primary_button_loadable.dart';
 import 'package:frontend_getyourtopic/component/topic_result.dart';
