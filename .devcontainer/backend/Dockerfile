@@ -12,7 +12,7 @@ RUN pip install --upgrade pip \
 # Install Python dependencies
 COPY backend-claude-api/requirements.txt requirements.txt
 RUN pip install -r requirements.txt && \
-    pip install uvicorn pillow
+    pip install uvicorn pillow sse_starlette
 
 WORKDIR /workspace/backend-claude-api
 CMD ["uvicorn", "main:app", "--reload","--port","8000"]

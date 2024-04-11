@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
-import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:http/http.dart' as http;
@@ -38,27 +36,27 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   @override
   // Future<Stream<String>> getTopicStream(String prompt,
   Stream<String> getTopicStream(String prompt, {String? pictureBase64}) async* {
-    final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
-    final body = {
-      "apikey": "",
-      "prompt": prompt,
-      "picture_base64": pictureBase64,
-      "dry_run": false,
-    };
-    final header = {
-      'accept': 'text/event-stream',
-      "Content-Type": "application/json",
-    };
+    // final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
+    // final body = {
+    //   "apikey": "",
+    //   "prompt": prompt,
+    //   "picture_base64": pictureBase64,
+    //   "dry_run": false,
+    // };
+    // final header = {
+    //   'accept': 'text/event-stream',
+    //   "Content-Type": "application/json",
+    // };
 
-    Stream<SSEModel> stream = SSEClient.subscribeToSSE(
-        method: SSERequestType.POST,
-        url: endpointUri.toString(),
-        header: header,
-        body: body);
+    // Stream<SSEModel> stream = SSEClient.subscribeToSSE(
+    //     method: SSERequestType.POST,
+    //     url: endpointUri.toString(),
+    //     header: header,
+    //     body: body);
 
-    stream.listen((event) {
-      print(event);
-    });
+    // stream.listen((event) {
+    //   print(event);
+    // });
 
     // final client = HttpClient();
 
