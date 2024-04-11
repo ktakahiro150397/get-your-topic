@@ -40,9 +40,7 @@ system_role = """あなたは話題を考えてくれるアシスタントです
 1つの話題につき、以下のフォーマットで答えてください。
 
 1. <あなたが考えた話題1>
-[<名前・役職など>]:「XXXXXXXXXX」
-[<名前・役職など>]:「XXXXXXXXXX」
-[<名前・役職など>]:「XXXXXXXXXX」
+<会話例>
 
 ----------------------
 
@@ -114,6 +112,7 @@ async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
                         data = {"content":f"{content}"}
                         if content is not None:
                             yield content
+                yield f"\n\n\n(使用モデル : {chatter.model})"
                 print("end")
                 print("------------------")
 
