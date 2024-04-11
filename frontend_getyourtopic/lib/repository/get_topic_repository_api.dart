@@ -57,6 +57,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       request.headers[key] = value;
     });
     request.body = jsonEncode(body);
+    request.persistentConnection = false;
 
     return getStream(request);
   }
