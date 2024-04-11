@@ -97,11 +97,7 @@ async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
         raise HTTPException(status_code=400, detail="prompt is required")
     
     if item.dry_run:
-        testResponse = get_topic_stream_test()
-
-        return StreamingResponse(
-            content=testResponse,
-        )
+        return EventSourceResponse(get_topic_stream_test())
     else:
         def get_stream():
             try:
@@ -109,26 +105,13 @@ async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
                 print("start")
 
                 response = chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
-                
-                # yield f"event: START\ndata:\n\n"
-                # yield {
-                #                 "event":"START"
-                #             }
+
                 for chunk in response:
                     if chunk is not None:
                         content = chunk.choices[0].delta.content
                         data = {"content":f"{content}"}
                         if content is not None:
                             yield content
-                            # yield f"event: RESPONSE\ndata: {json.dumps(data)}\n\n"
-                            # yield {
-                            #     "data": content,
-                            #     "event":"RESPONSE"
-                            # }
-                # yield {
-                #                 "event":"END"
-                #             }
-                # yield f"event: END\ndata:\n\n"
                 print("end")
                 print("------------------")
 
@@ -136,43 +119,12 @@ async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
                 raise HTTPException(status_code=500, detail=str(e))
         
         return EventSourceResponse(get_stream())
-        #return StreamingResponse(content=get_stream(),media_type="text/event-stream")
 
-        # return StreamingResponse(
-        #     content=get_stream(response),
-        #     media_type="text/event-stream",
-        # )
-    
-# async def get_stream(response):
-#     async for chunk in response:
-#         if chunk is not None:
-#             content = chunk.choices[0].delta.content
-#             if content is not None:
-#                 yield content
-
-
-    
 async def get_topic_stream_test():
     testString = "Dry run is enabled.This is test stream.Your request is valid."
     for i,char in enumerate(testString):
         if i == len(testString) - 1:
-            yield {
-                "id":"get_topic_stream_test",
-                "object":"chat.completion.chunk",
-                "created":1712629508,
-                "model":"get_topic_stream_test_dry_run",
-                "system_fingerprint":None,
-                "choices":[
-                    {"index":0,"delta":{"content":char},
-                    "logprobs":None,"finish_reason":"stop"}]}
+            yield char
         else:
-            yield {
-                "id":"get_topic_stream_test",
-                "object":"chat.completion.chunk",
-                "created":1712629508,
-                "model":"get_topic_stream_test_dry_run",
-                "system_fingerprint":None,
-                "choices":[
-                    {"index":0,"delta":{"content":char},
-                    "logprobs":None,"finish_reason":None}]}
+            yield char
             await asyncio.sleep(50/1000)
