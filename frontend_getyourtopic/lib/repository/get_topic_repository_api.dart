@@ -37,12 +37,14 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
   @override
   Future<ByteStream> getTopicStream(String prompt, {String? pictureBase64}) {
     const apiServerUrl = String.fromEnvironment("API_SERVER");
+    const isDryRun = bool.fromEnvironment("DRY_RUN", defaultValue: true);
+
     final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
     final body = {
       "apikey": "",
       "prompt": prompt,
       "picture_base64": pictureBase64,
-      "dry_run": false,
+      "dry_run": isDryRun,
     };
     final header = {
       'accept': 'text/event-stream',
