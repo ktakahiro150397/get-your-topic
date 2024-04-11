@@ -116,9 +116,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     //await getResponseStream();
     getResponseStream();
-    setState(() {
-      isLoading = false;
-    });
   }
 
   Future<GetTopic> postLLMAPI() async {
@@ -180,6 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             isResponseComplete = true;
             onPressedGetResponse = onPressedGetStreamingResponse;
+            isLoading = false;
           });
         },
       );
@@ -221,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 16),
               PrimaryButton(
-                title: "画像で状況を教える！",
+                title: "画像を添付する",
                 hintText: "今の状況を画像で教えてください！",
                 onPressed: () async {
                   final mediaData = await ImagePickerWeb.getImageInfo;
@@ -239,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
               const Divider(),
               const SizedBox(height: 8),
               PrimaryButtonLoadable(
-                title: "話題を提案してもらう！(Streaming)",
+                title: "話題を提案してもらう！",
                 height: 50,
                 onPressed: onPressedGetResponse,
                 isLoading: isLoading,
