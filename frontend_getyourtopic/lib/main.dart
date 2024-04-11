@@ -8,10 +8,7 @@ import 'package:frontend_getyourtopic/component/topic_result.dart';
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
-import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
-import 'package:frontend_getyourtopic/sse_stream_web.dart';
 import 'package:image_picker_web/image_picker_web.dart';
-import 'package:http/http.dart' as http;
 
 void main() async {
   runApp(const MyApp());
@@ -139,28 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressedGetResponse = null;
     });
 
-    const apiServerUrl = String.fromEnvironment("API_SERVER");
-    final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
-    final body = {
-      "apikey": "",
-      "prompt": promptController.text,
-      "picture_base64": base64WithScheme,
-      "dry_run": false,
-    };
-    final header = {
-      'accept': 'text/event-stream',
-      "Content-Type": "application/json",
-    };
-
-    var request = http.Request(
-      "POST",
-      endpointUri,
-    );
-    request.headers["Accept"] = "text/event-stream";
-    request.headers["Content-Type"] = "application/json";
-    request.body = jsonEncode(body);
-
-    var stream = getStream(request);
+    var stream = topicRepo.getTopicStream(promptController.text,
+        pictureBase64: base64WithScheme);
 
     var isBlankStreak = false;
     stream.asStream().listen((event) {
@@ -207,56 +184,6 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       );
     });
-
-    // // どばっとくる・全部生の文字列
-    // var client = http.Client();
-    // var request = http.Request(
-    //   "POST",
-    //   endpointUri,
-    // );
-    // request.headers["Accept"] = "text/event-stream";
-    // request.headers["Content-Type"] = "application/json";
-    // request.body = jsonEncode(body);
-
-    // Future<http.StreamedResponse> response = client.send(request);
-
-    // response.asStream().listen((event) {
-    //   print(event);
-    //   event.stream.transform(const Utf8Decoder()).listen((value) {
-    //     print((value));
-    //   });
-    // });
-
-    // // どばっとくる・内容のモデルへのハンドリングOK
-    // SSEClient.subscribeToSSE(
-    //         method: SSERequestType.POST,
-    //         url: endpointUri.toString(),
-    //         header: header,
-    //         body: body)
-    //     .listen((event) {
-    //   if (event.data != null) {
-    //     setState(() {
-    //       isResponseOK = true;
-    //       topicResponse += event.data!.trim();
-    //     });
-    //   }
-    // });
-
-    // stream.listen((event) {
-    //   if (event.data != null) {
-    //     topicResponse += event.data!;
-    //   }
-    // });
-
-    // final stream = topicRepo.getTopicStream(promptController.text,
-    //     pictureBase64: base64WithScheme);
-
-    // await for (var chunk in stream) {
-    //   setState(() {
-    //     isResponseOK = true;
-    //     topicResponse += chunk;
-    //   });
-    // }
   }
 
   @override
