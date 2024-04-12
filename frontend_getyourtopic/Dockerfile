@@ -1,6 +1,11 @@
 # Base image
 FROM ubuntu:20.04 AS builder
 
+# front-end
+ENV API_SERVER=http://backend:8000
+ENV DRY_RUN=true
+
+
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
@@ -42,7 +47,6 @@ RUN cd /workspace
 RUN flutter pub get
 
 RUN flutter build web
-
 
 # -----Runner-----
 FROM nginx:stable-alpine3.17-slim AS runner
