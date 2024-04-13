@@ -205,7 +205,10 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.all(8.0),
           child: ListView(
             children: [
-              const Text("今の状況を教えてください。\nコミュ障のあなたに代わってAIが最適な話題を考えてくれます。"),
+              const Text(
+                "今の状況を教えてください。\nコミュ障のあなたに代わってAIが最適な話題を考えてくれます。",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: promptController,
