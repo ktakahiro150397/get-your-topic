@@ -39,7 +39,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
     const apiServerUrl = String.fromEnvironment("API_SERVER");
     const isDryRun = bool.fromEnvironment("DRY_RUN", defaultValue: true);
 
-    final endpointUri = Uri.https("gettopic-backend", "/getTopicStream/");
+    final endpointUri = Uri.https("gettopic-backend.yanelmo.net", "/getTopicStream/");
     // final endpointUri = Uri.http(apiServerUrl, "/getTopicStream/");
     final body = {
       "apikey": "",
