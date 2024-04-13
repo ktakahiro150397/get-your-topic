@@ -1,5 +1,6 @@
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
+import 'package:http/http.dart';
 
 class GetTopicRepositoryTest extends GetTopicRepository {
   @override
@@ -10,5 +11,10 @@ class GetTopicRepositoryTest extends GetTopicRepository {
         model: "GetTopicRepositoryTest",
         response:
             "getTopic / Your prompt is $prompt! base64:${pictureBase64?.isEmpty}");
+  }
+
+  @override
+  Future<ByteStream> getTopicStream(String prompt, {String? pictureBase64}) {
+    throw UnimplementedError();
   }
 }

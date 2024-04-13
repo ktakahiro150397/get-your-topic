@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,10 +8,9 @@ import 'package:frontend_getyourtopic/component/topic_result.dart';
 import 'package:frontend_getyourtopic/model/get_topic.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository.dart';
 import 'package:frontend_getyourtopic/repository/get_topic_repository_api.dart';
-import 'package:frontend_getyourtopic/repository/get_topic_repository_test.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -48,9 +48,12 @@ class _MyHomePageState extends State<MyHomePage> {
   String topicResponse = "";
   bool isLoading = false;
   bool isResponseOK = false;
+  bool isResponseComplete = false;
 
   Uint8List? imageBytes;
   String base64WithScheme = "";
+
+  void Function()? onPressedGetResponse;
 
   Widget getUploadPicture() {
     if (imageBytes == null) {
@@ -87,6 +90,34 @@ class _MyHomePageState extends State<MyHomePage> {
     return false;
   }
 
+  void onPressedGetStreamingResponse() async {
+    final isValid = validate();
+
+    if (!isValid) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("エラー"),
+              content: const Text("文章か画像で今の状況を教えてください！"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          });
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+    //await getResponseStream();
+    getResponseStream();
+  }
+
   Future<GetTopic> postLLMAPI() async {
     final response = await topicRepo.getTopic(promptController.text,
         pictureBase64: base64WithScheme);
@@ -94,11 +125,72 @@ class _MyHomePageState extends State<MyHomePage> {
     return response;
   }
 
+  void getResponseStream() {
+    topicResponse = "";
+
+    setState(() {
+      isResponseComplete = false;
+      onPressedGetResponse = null;
+    });
+
+    var stream = topicRepo.getTopicStream(promptController.text,
+        pictureBase64: base64WithScheme);
+
+    var isBlankStreak = false;
+    stream.asStream().listen((event) {
+      event
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .listen(
+        (dataLine) {
+          var lineRegex = RegExp(r'^([^:]*)(?::)?(?: )?(.*)?$');
+
+          ///Get the match of each line through the regex
+          Match match = lineRegex.firstMatch(dataLine)!;
+          var field = match.group(1);
+          if (field!.isEmpty) {
+            return;
+          }
+          var value = '';
+          if (field == "data") {
+            //If the field is data, we get the data through the substring
+            value = dataLine.substring(
+              6,
+            );
+
+            if (value.isEmpty) {
+              if (isBlankStreak) {
+                value += "\n";
+                isBlankStreak = false;
+              } else {
+                isBlankStreak = true;
+              }
+            }
+
+            setState(() {
+              isResponseOK = true;
+              topicResponse += value;
+            });
+          }
+        },
+        onDone: () {
+          setState(() {
+            isResponseComplete = true;
+            onPressedGetResponse = onPressedGetStreamingResponse;
+            isLoading = false;
+          });
+        },
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     topicRepo = GetTopicRepositoryAPI();
     //topicRepo = GetTopicRepositoryTest();
+
+    onPressedGetResponse = onPressedGetStreamingResponse;
   }
 
   @override
@@ -113,7 +205,10 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.all(8.0),
           child: ListView(
             children: [
-              const Text("今の状況を教えてください。\nコミュ障のあなたに代わってAIが最適な話題を考えてくれます。"),
+              const Text(
+                "今の状況を教えてください。\nコミュ障のあなたに代わってAIが最適な話題を考えてくれます。",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: promptController,
@@ -127,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 16),
               PrimaryButton(
-                title: "画像で状況を教える！",
+                title: "画像を添付する",
                 hintText: "今の状況を画像で教えてください！",
                 onPressed: () async {
                   final mediaData = await ImagePickerWeb.getImageInfo;
@@ -142,57 +237,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 16),
               getUploadPicture(),
-              //const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
               PrimaryButtonLoadable(
-                isLoading: isLoading,
-                loadingWidget: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(),
-                    ),
-                    SizedBox(width: 8),
-                    Text("話題を考えています..."),
-                  ],
-                ),
                 title: "話題を提案してもらう！",
                 height: 50,
-                onPressed: () async {
-                  final isValid = validate();
-
-                  if (!isValid) {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text("エラー"),
-                            content: const Text("文章か画像で今の状況を教えてください！"),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("OK"),
-                              ),
-                            ],
-                          );
-                        });
-                    return;
-                  }
-
-                  setState(() {
-                    isLoading = true;
-                  });
-                  final response = await postLLMAPI();
-
-                  setState(() {
-                    isLoading = false;
-                    topicResponse = response.responseContent;
-                    isResponseOK = true;
-                  });
-                },
+                onPressed: onPressedGetResponse,
+                isLoading: isLoading,
               ),
               const SizedBox(
                 height: 16,
@@ -200,6 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
               TopicResult(
                 isResponseOK: isResponseOK,
                 result: topicResponse,
+                isResponseComplete: isResponseComplete,
               ),
             ],
           ),

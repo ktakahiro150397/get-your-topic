@@ -1,16 +1,24 @@
+import asyncio
+import json
 import os
-from fastapi import FastAPI,HTTPException
+from urllib.request import Request
+from fastapi import FastAPI,HTTPException,status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
 from Base64Test.base64_text import Base64Text
 from chatter.claude_opus_chatter import ClaudeOpusChatter
 from chatter.openai_chatter import OpenAIChatter
 from model.get_topic import GetTopicRequestItem
+from openai.types.chat import ChatCompletion
+from sse_starlette.sse import EventSourceResponse
 
 origins = [
-    "http://localhost",
-    "http://127.0.0.1:41639",
-    "http://127.0.0.1:36611",
-    "https://yanelmo.net",
+    # "http://localhost",
+    # "http://127.0.0.1:41639",
+    # "http://127.0.0.1:36611",
+    # "https://yanelmo.net",
+    "*",
 ]
 
 # uvicorn main:app --reload --port 8000
@@ -25,23 +33,19 @@ app.add_middleware(
 )
 
 system_role = """あなたは話題を考えてくれるアシスタントです。
-与えられた状況から、以下の内容を考えてください。
-- 親しい人に対しての話題
-- 目上の人に対しての話題
+与えられた状況から、その場で使える話題を考えてください。
+できれば5つ考えてください。
+また、それぞれの話題をどのように展開していくか、会話例を提示してください。
 
-回答には、以下のフォーマットを必ず含めてください。
-また、それぞれの提案についてどのように話題を展開していくかのサンプルを提示してください。
+1つの話題につき、以下のフォーマットで答えてください。
 
-フォーマット：
-# 親しい人に対して
-- あなたの考えた話題_1
-- あなたの考えた話題_2
-- あなたの考えた話題_3
+1. <あなたが考えた話題1>
+<会話例>
 
-# 目上の人に対して
-- あなたの考えた話題_1
-- あなたの考えた話題_2
-- あなたの考えた話題_3
+----------------------
+
+2. <あなたが考えた話題2>
+(以下同様)
 """
 
 # chatter = ClaudeOpusChatter(
@@ -54,6 +58,11 @@ chatter = OpenAIChatter(
     model=os.getenv("OPENAI_MODEL"),
     system_role=system_role
 )
+
+@app.exception_handler(RequestValidationError)
+async def handler(request:Request, exc:RequestValidationError):
+    print(exc)
+    return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 @app.get("/")
 async def root():
@@ -80,4 +89,43 @@ async def get_topic(item:GetTopicRequestItem):
             "model": chatter.model,
             "response": response
         }
+
+@app.post("/getTopicStream/")
+async def get_topic_stream(item:GetTopicRequestItem) -> EventSourceResponse:
+    # validate the input
+    if item.prompt == "":
+        raise HTTPException(status_code=400, detail="prompt is required")
     
+    if item.dry_run:
+        return EventSourceResponse(get_topic_stream_test())
+    else:
+        def get_stream():
+            try:
+                print("------------------")
+                print("start")
+
+                response = chatter.chat_stream(memory_id=item.apikey,message=item.prompt,base64_str=item.picture_base64)
+
+                for chunk in response:
+                    if chunk is not None:
+                        content = chunk.choices[0].delta.content
+                        data = {"content":f"{content}"}
+                        if content is not None:
+                            yield content
+                yield f"\n\n\n(使用モデル : {chatter.model})"
+                print("end")
+                print("------------------")
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        return EventSourceResponse(get_stream())
+
+async def get_topic_stream_test():
+    testString = "Dry run is enabled.This is test stream.Your request is valid."
+    for i,char in enumerate(testString):
+        if i == len(testString) - 1:
+            yield char
+        else:
+            yield char
+            await asyncio.sleep(50/1000)

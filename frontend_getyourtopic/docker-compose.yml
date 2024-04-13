@@ -1,0 +1,36 @@
+services:
+  flutter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_SERVER=http://backend:8000
+      - DRY_RUN=false
+    volumes:
+      - ./log:/var/log/nginx/
+    depends_on:
+      - backend
+  backend:
+    container_name: backend
+    build:
+      context: ../../
+      dockerfile: .devcontainer/backend/Dockerfile
+    environment:
+      - HOME=/root
+    env_file:
+      - .env
+    command: uvicorn main:app --reload --port 8000 --host=0.0.0.0
+    volumes:
+      - ../../:/workspace:cached
+      - getyourtopic-pip-front:/usr/local/lib/
+    ports:
+      - 8000:8000
+    networks:
+      - network_production
+volumes:
+  getyourtopic-pip-front:
+networks:
+  network_test:
+    external: true
+  network_production:
+    external: true

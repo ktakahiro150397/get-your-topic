@@ -11,6 +11,6 @@ RUN pip install --upgrade pip \
 
 # Install Python dependencies
 RUN pip install -r requirements.txt && \
-    pip install uvicorn pillow
+    pip install uvicorn pillow sse_starlette
 
-CMD ["uvicorn", "main:app", "--port","80","--host","0.0.0.0"]
+CMD ["uvicorn", "main:app", "--port","8000","--host","0.0.0.0"]
