@@ -16,7 +16,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       "apikey": "",
       "prompt": prompt,
       "picture_base64": pictureBase64,
-      "dry_run": false,
+      "dry_run": true,
     };
 
     final endpointUri = Uri.http(apiServerUrl, "/getTopic/");
@@ -45,7 +45,7 @@ class GetTopicRepositoryAPI extends GetTopicRepository {
       "apikey": "",
       "prompt": prompt,
       "picture_base64": pictureBase64,
-      "dry_run": isDryRun,
+      "dry_run": false,
     };
     final header = {
       'accept': 'text/event-stream',
